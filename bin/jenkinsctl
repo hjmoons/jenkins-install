@@ -1,57 +1,27 @@
 #!/bin/sh
 
-JENKINS_HOME="/data/jenkins"
-JENKINS_JAVA_CMD="/usr/bin/java"
-JENKINS_JAVA_OPTIONS="-Djava.awt.headless=true"
-JENKINS_PORT="8080"
-JENKINS_DEBUG_LEVEL="5"
-JENKINS_ENABLE_ACCESS_LOG="yes"
-JENKINS_HANDLER_MAX="100"
-JENKINS_HANDLER_IDLE="20"
-
-JENKINS="/app/jenkins/bin/jenkins.war"
+JENKINS="/app/jenkins/bin/jenkins"
 PROG=$(basename $JENKINS)
-
-# check jenkins execution file
-test -r "$JENKINS" || { echo "$JENKINS not installed";
-        if [ "$1" = "stop" ]; then exit 0;
-        else exit 5; fi; }
 
 PID="/app/jenkins/logs/jenkins.pid"
 LOCKFILE="/app/jenkins/logs/jenkins"
 
 # Source function library.
-#. /etc/init.d/functions
-
-# Set up environment accordingly to the configuration settings
-[ -n "$JENKINS_HOME" ] || { echo "JENKINS_HOME not configured";
-        if [ "$1" = "stop" ]; then exit 0;
-        else exit 6; fi; }
-[ -d "$JENKINS_HOME" ] || { echo "JENKINS_HOME directory does not exit: $JENKINS_HOME";
-        if [ "$1" = "stop" ]; then exit 0;
-        else exit 1; fi; }
-
-PARAMS="--logfile=/app_log/jenkins/jenkins.log --webroot=/app/jenkins/war"
-[ -n "$JENKINS_PORT" ] && PARAMS="$PARAMS --httpPort=$JENKINS_PORT"
-[ -n "$JENKINS_DEBUG_LEVEL" ] && PARAMS="$PARAMS --debug=$JENKINS_DEBUG_LEVEL"
-[ -n "$JENKINS_HANDLER_MAX" ] && PARAMS="$PARAMS --handlerCountMax=$JENKINS_HANDLER_MAX"
-[ -n "$JENKINS_HANDLER_IDLE" ] && PARAMS="$PARAMS --handlerCountMaxIdle=$JENKINS_HANDLER_IDLE"
-
-if [ "$JENKINS_ENABLE_ACCESS_LOG" = "yes" ]; then
-        PARAMS="$PARAMS --accessLoggerClassName=winstone.accesslog.SimpleAccessLogger --simpleAccessLogger.format=combined --simpleAccessLogger.file=/app_log/jenkins/access.log"
-fi
+. /etc/rc.d/init.d/functions
+#. /lib/lsb/init-functions
 
 start() {
         [ -x $JENKINS ] || exit 5
-        echo -n $"Starting $PROG: "
-        daemon -- $JENKINS_JAVA_CMD $JENKINS_JAVA_OPTIONS -DJENKINS_HOME=$JENKINS_HOME -jar $JENKINS $PARAMS
+        echo -n "Starting $PROG: "
+        daemon /app/jenkins/bin/jenkins
         retval=$?
+        echo
         [ $retval -eq 0 ] && touch $LOCKFILE
         return $retval
 }
 
 stop() {
-        echo -n $"Stopping $PROG: "
+        echo -n "Stopping $PROG: "
         killproc $PROG -QUIT
         retval=$?
         echo
@@ -73,7 +43,8 @@ case "$1" in
                 $1
                 ;;
         stop)
-                rh_status-q || exit 0
+                rh_status_q || exit 0
                 $1
                 ;;
+
 esac
