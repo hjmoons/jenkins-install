@@ -4,7 +4,7 @@
 JENKINS_HOME=/data/jenkins
 
 # Location of the Jenkins WAR
-#JENKINS_WAR=/usr/share/java/jenkins.war
+JENKINS_WAR=/app/jenkins/bin/jenkins.war
 
 # Location of the exploded WAR
 JENKINS_WEBROOT=/app/jenkins/war

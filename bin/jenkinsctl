@@ -1,50 +1,71 @@
-#!/bin/sh
+#!/bin/bash
 
-JENKINS="/app/jenkins/bin/jenkins"
-PROG=$(basename $JENKINS)
-
-PID="/app/jenkins/logs/jenkins.pid"
-LOCKFILE="/app/jenkins/logs/jenkins"
+# Jenkins 관련 경로 설정
+PID_FILE="/var/run/jenkins.pid"       # Jenkins PID 파일 경로
 
 # Source function library.
 . /etc/rc.d/init.d/functions
-#. /lib/lsb/init-functions
 
+# 기능별 함수 정의
 start() {
-        [ -x $JENKINS ] || exit 5
-        echo -n "Starting $PROG: "
-        daemon /app/jenkins/bin/jenkins
-        retval=$?
-        echo
-        [ $retval -eq 0 ] && touch $LOCKFILE
-        return $retval
+    if [ -f "$PID_FILE" ] && status -p "$PID_FILE" > /dev/null; then
+        echo "Jenkins가 이미 실행 중입니다."
+    else
+        echo "Jenkins를 시작합니다..."
+        daemon --pidfile=$PID_FILE /app/jenkins/bin/jenkins
+        if [ $? -eq 0 ]; then
+            echo "Jenkins 시작 완료. (PID: $(cat $PID_FILE))"
+        else
+            echo "Jenkins 시작 실패."
+        fi
+    fi
 }
 
 stop() {
-        echo -n "Stopping $PROG: "
-        killproc $PROG -QUIT
-        retval=$?
-        echo
-        [ $retval -eq 0 ] && rm -f $LOCKFILE
-        return $retval
+    if [ -f "$PID_FILE" ]; then
+        echo "Jenkins를 중지합니다..."
+        killproc -p "$PID_FILE"
+        if [ $? -eq 0 ]; then
+            rm -f "$PID_FILE"
+            echo "Jenkins 중지 완료."
+        else
+            echo "Jenkins 중지 실패."
+        fi
+    else
+        echo "Jenkins가 실행 중이지 않습니다."
+    fi
 }
 
-rh_status() {
-        status $PROG
+status_check() {
+    if [ -f "$PID_FILE" ]; then
+        status -p "$PID_FILE"
+        if [ $? -eq 0 ]; then
+            echo "Jenkins가 실행 중입니다."
+        else
+            echo "Jenkins가 실행 중이지 않습니다."
+        fi
+    else
+        echo "Jenkins가 실행 중이지 않습니다."
+    fi
 }
 
-rh_status_q() {
-        rh_status > /dev/null 2>&1
-}
-
+# 스크립트 옵션 처리
 case "$1" in
-        start)
-                rh_status_q && exit 0
-                $1
-                ;;
-        stop)
-                rh_status_q || exit 0
-                $1
-                ;;
-
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status_check
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    *)
+        echo "사용법: $0 {start|stop|status|restart}"
+        exit 1
+        ;;
 esac
