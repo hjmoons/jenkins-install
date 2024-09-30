@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Jenkins 관련 경로 설정
-PID_FILE="/var/run/jenkins.pid"       # Jenkins PID 파일 경로
+PID_FILE="/app/jenkins/logs/jenkins.pid"       # Jenkins PID 파일 경로
+JENKINS_HOME="/app/jenkins/sbin"
 
 # Source function library.
 . /etc/rc.d/init.d/functions
@@ -12,7 +13,7 @@ start() {
         echo "Jenkins가 이미 실행 중입니다."
     else
         echo "Jenkins를 시작합니다..."
-        daemon --pidfile=$PID_FILE /app/jenkins/bin/jenkins
+        daemon --pidfile $PID_FILE /app/jenkins/bin/jenkins
         if [ $? -eq 0 ]; then
             echo "Jenkins 시작 완료. (PID: $(cat $PID_FILE))"
         else
