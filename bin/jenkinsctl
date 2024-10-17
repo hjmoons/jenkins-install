@@ -1,20 +1,26 @@
 #!/bin/bash
 
 # Jenkins 관련 경로 설정
-PID_FILE="/app/jenkins/logs/jenkins.pid"       # Jenkins PID 파일 경로
-JENKINS_HOME="/app/jenkins/sbin"
+LOG_DIR="/app/jenkins/logs"
+PID_FILE="$LOG_DIR/jenkins.pid"       # Jenkins PID 파일 경로
+JENKINS="/app/jenkins/sbin/jenkins"
 
 # Source function library.
 . /etc/rc.d/init.d/functions
 
 # 기능별 함수 정의
 start() {
+    if [ ! -d "$LOG_DIR" ]; then
+        mkdir $LOG_DIR
+    fi
+
     if [ -f "$PID_FILE" ] && status -p "$PID_FILE" > /dev/null; then
         echo "Jenkins가 이미 실행 중입니다."
     else
         echo "Jenkins를 시작합니다..."
-        daemon --pidfile $PID_FILE /app/jenkins/bin/jenkins
+        nohup $JENKINS > /dev/null 2>&1 &
         if [ $? -eq 0 ]; then
+            pgrep -f $JENKINS > $PID_FILE
             echo "Jenkins 시작 완료. (PID: $(cat $PID_FILE))"
         else
             echo "Jenkins 시작 실패."
@@ -25,7 +31,7 @@ start() {
 stop() {
     if [ -f "$PID_FILE" ]; then
         echo "Jenkins를 중지합니다..."
-        killproc -p "$PID_FILE"
+        kill -9 "$(cat $PID_FILE)"
         if [ $? -eq 0 ]; then
             rm -f "$PID_FILE"
             echo "Jenkins 중지 완료."

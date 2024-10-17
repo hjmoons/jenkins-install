@@ -243,6 +243,10 @@ if [ -z "${JENKINS_WAR}" ]; then
         JENKINS_WAR=/usr/share/java/jenkins.war
 fi
 
+if [ -n "${JENKINS_HOME}" ]; then
+        export JENKINS_HOME=$JENKINSHOME
+fi
+
 check_env \
         JENKINS_WAR \
         -- \
