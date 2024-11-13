@@ -1,16 +1,16 @@
 #!/bin/sh
 
 # Directory where Jenkins stores its configuration and workspaces
-JENKINS_HOME=/data/jenkins
+JENKINS_HOME=../workspace
 
 # Location of the Jenkins WAR
-JENKINS_WAR=/app/jenkins/bin/jenkins.war
+JENKINS_WAR=./jenkins.war
 
 # Location of the exploded WAR
-JENKINS_WEBROOT=/app/jenkins/war
+JENKINS_WEBROOT=../war
 
 # Location of the Jenkins log. By default, systemd-journald(8) is used.
-LOG_HOME=/app_log/jenkins
+LOG_HOME=../log
 JENKINS_LOG=$LOG_HOME/jenkins.log
 
 # The Java home directory. When left empty, JENKINS_JAVA_CMD and PATH are consulted.
@@ -244,7 +244,7 @@ if [ -z "${JENKINS_WAR}" ]; then
 fi
 
 if [ -n "${JENKINS_HOME}" ]; then
-        export JENKINS_HOME=$JENKINSHOME
+        export JENKINS_HOME=$JENKINS_HOME
 fi
 
 check_env \

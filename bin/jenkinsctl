@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Jenkins 관련 경로 설정
-LOG_DIR="/app/jenkins/logs"
+JENKINS="./jenkins.war"
+LOG_DIR="../log"
 PID_FILE="$LOG_DIR/jenkins.pid"       # Jenkins PID 파일 경로
-JENKINS="/app/jenkins/sbin/jenkins"
 
 # Source function library.
 . /etc/rc.d/init.d/functions
